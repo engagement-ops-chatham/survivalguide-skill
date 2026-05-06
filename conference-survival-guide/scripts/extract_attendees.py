@@ -4,7 +4,10 @@ import json
 import re
 from pathlib import Path
 
-from pypdf import PdfReader
+try:
+    from pypdf import PdfReader
+except ModuleNotFoundError:  # pragma: no cover - exercised in environments without pypdf
+    PdfReader = None
 
 
 REQUEST_FILTER_RULES = [
@@ -94,6 +97,8 @@ def _extract_heading(line: str) -> str | None:
 
 
 def _parse_pdf_records(source_path: Path) -> list[dict]:
+    if PdfReader is None:
+        raise ModuleNotFoundError("pypdf is required to read PDF attendee sources")
     reader = PdfReader(str(source_path))
     records = []
     current_section = ""
