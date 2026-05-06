@@ -80,6 +80,23 @@ class ExtractAttendeesTest(unittest.TestCase):
         kept = filter_records(rows, filters)
         self.assertEqual([row["firm"] for row in kept], ["Acacia"])
 
+    def test_filter_records_matches_lending_group_sections(self):
+        rows = [
+            {
+                "section": "lending groups",
+                "firm": "Wingspire Capital",
+                "name": "David Gittleman",
+            },
+            {
+                "section": "private equity firms",
+                "firm": "Acacia",
+                "name": "Daniel Troy",
+            },
+        ]
+        filters = {"include_sections": ["lenders"], "exclude_terms": []}
+        kept = filter_records(rows, filters)
+        self.assertEqual([row["firm"] for row in kept], ["Wingspire Capital"])
+
     def test_parse_pdf_records_extracts_sectioned_rows(self):
         pdf_text = "\n".join(
             [
@@ -287,6 +304,45 @@ class ExtractAttendeesTest(unittest.TestCase):
             },
         ]
         request_text = "Exclude investment banking contacts and focus on private equity."
+        with make_workspace_tempdir() as tmp:
+            tmp_path = Path(tmp)
+            request_path = tmp_path / "request.txt"
+            source_path = tmp_path / "attendees.json"
+            output_path = tmp_path / "filtered.json"
+            request_path.write_text(request_text, encoding="utf-8")
+            source_path.write_text(json.dumps(source_rows), encoding="utf-8")
+
+            argv = [
+                "extract_attendees.py",
+                "--request-file",
+                str(request_path),
+                "--source",
+                str(source_path),
+                "--out",
+                str(output_path),
+            ]
+            with patch.object(sys, "argv", argv):
+                exit_code = main()
+
+            written = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(written, [source_rows[0]])
+
+    def test_main_writes_filtered_json_for_lending_group_request(self):
+        source_rows = [
+            {
+                "section": "lending groups",
+                "firm": "Wingspire Capital",
+                "name": "David Gittleman",
+            },
+            {
+                "section": "private equity firms",
+                "firm": "Acacia",
+                "name": "Daniel Troy",
+            },
+        ]
+        request_text = "Please focus on lending groups for this event."
         with make_workspace_tempdir() as tmp:
             tmp_path = Path(tmp)
             request_path = tmp_path / "request.txt"

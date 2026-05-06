@@ -30,6 +30,11 @@ REQUEST_FILTER_RULES = [
     },
 ]
 
+INCLUDE_SECTION_ALIASES = {
+    "private equity": ["private equity", "private equity firm", "private equity firms"],
+    "lenders": ["lender", "lenders", "lending group", "lending groups"],
+}
+
 SECTION_HEADING_PATTERNS = [
     re.compile(r"^private equity(?: firms?)?$"),
     re.compile(r"^investment banks?$"),
@@ -61,8 +66,13 @@ def filter_records(records: list[dict], filters: dict) -> list[dict]:
     for row in records:
         section = _normalize_text(row.get("section", ""))
         blob = " ".join(_normalize_text(str(value)) for value in row.values())
-        if include_sections and not any(term in section for term in include_sections):
-            continue
+        if include_sections:
+            include_matches = []
+            for term in include_sections:
+                aliases = INCLUDE_SECTION_ALIASES.get(term, [term])
+                include_matches.extend(_normalize_text(alias) for alias in aliases)
+            if not any(alias in section for alias in include_matches):
+                continue
         if any(term in blob for term in exclude_terms):
             continue
         kept.append(row)
