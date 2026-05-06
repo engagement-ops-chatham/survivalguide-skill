@@ -19,13 +19,15 @@ VALIDATOR_PATH = (
 
 
 def load_validator_module():
+    if not VALIDATOR_PATH.exists():
+        return None
     spec = importlib.util.spec_from_file_location("quick_validate", VALIDATOR_PATH)
     if spec is None or spec.loader is None:
         return None
     module = importlib.util.module_from_spec(spec)
     try:
         spec.loader.exec_module(module)
-    except ModuleNotFoundError:
+    except (ModuleNotFoundError, FileNotFoundError):
         return None
     return module
 
