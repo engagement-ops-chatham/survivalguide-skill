@@ -1,8 +1,8 @@
 # Trigger Prompts
 
 - `/survivalguide`
-- `Build an account research brief for this Salesforce account using current public research.`
-- `I pasted a Salesforce account snapshot. Give me a quick take, recent news, key people, and an outreach angle.`
+- `Build an account research brief for this HubSpot company using current public research.`
+- `I pasted a HubSpot company snapshot. Give me a quick take, recent news, key people, and an outreach angle.`
 
 ## Expected Checks
 
@@ -13,8 +13,8 @@ FAIL IF: The skill defaults to meeting-day prep or generic CRM summarization
 ```
 
 ```text
-ASSERT: Salesforce snapshot wording triggers the skill
-EXPECT: The skill treats Salesforce snapshot fields as CRM source-of-truth context for the run
+ASSERT: HubSpot snapshot wording triggers the skill
+EXPECT: The skill treats HubSpot snapshot fields as CRM source-of-truth context for the run
 FAIL IF: The skill overwrites CRM relationship history with public-web claims
 ```
 
@@ -34,7 +34,7 @@ FOLLOW-UP: Run during dry-run validation
 ```
 
 ```text
-PROMPT: salesforce-snapshot
+PROMPT: hubspot-snapshot
 RESULT: Pending
 NOTES: Not run yet
 FOLLOW-UP: Run during dry-run validation

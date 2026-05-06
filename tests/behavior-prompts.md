@@ -1,6 +1,6 @@
 # Behavior Prompts
 
-- `The Salesforce snapshot has rich relationship notes but no target contact. What should the skill do?`
+- `The HubSpot snapshot has rich relationship notes but no target contact. What should the skill do?`
 - `The user wants research on one person at the account but did not give a name or role.`
 - `The CRM snapshot is complete, but recent public information is thin or contradictory.`
 - `The account notes mention pain points from 2022 and the last CRM activity is stale.`
@@ -28,7 +28,7 @@ FAIL IF: The skill turns low-confidence research into hard claims
 
 ```text
 ASSERT: Relationship history remains CRM-led
-EXPECT: The skill preserves Salesforce notes as the source of truth for prior pain points, owners, and activity
+EXPECT: The skill preserves HubSpot notes as the source of truth for prior pain points, owners, and activity
 FAIL IF: The skill invents CRM history or omits relevant seller context from the snapshot
 ```
 

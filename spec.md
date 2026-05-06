@@ -2,7 +2,7 @@
 
 ## Goal
 
-Create a reusable skill that turns a matched Salesforce account snapshot plus current public research into a concise seller-ready account brief.
+Create a reusable skill that turns a matched HubSpot company snapshot plus current public research into a concise seller-ready account brief.
 
 ## Method Borrowed from HubSpot Daily Briefing
 
@@ -14,10 +14,11 @@ Create a reusable skill that turns a matched Salesforce account snapshot plus cu
 
 ## Scope
 
-- Salesforce-backed account research
+- HubSpot-backed account research
 - Pasted CRM snapshots as valid run input
 - Current public-web enrichment for recency
 - Outreach-angle guidance tied to account history and current signals
+- Fuller 3-4 sentence client and contact summaries when context supports them
 
 ## Out of Scope
 

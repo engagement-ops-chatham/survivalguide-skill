@@ -45,16 +45,24 @@ Start with a 2-3 sentence quick take covering:
 
 Then include:
 
+- `Client summary`
 - `Company profile`
 - `Confirmed CRM facts`
 - `Recent news and strategic developments`
 - `Hiring or growth signals`
 - `Key people`
+- `Contact summaries`
 - `Qualification signals`
 - `Recommended approach`
 - `Hypotheses and open questions`
 
 Keep `Confirmed CRM facts` separate from `Externally researched signals` and from `Hypotheses`.
+
+## Summary Depth
+
+- Write `Client summary` as a 3-4 sentence paragraph when the account-level context is meaningful.
+- Write each `Contact summary` as a 3-4 sentence paragraph when a contact has enough CRM or external context to support it.
+- If contact data is sparse, say that the contact context is limited instead of stretching weak signals into narrative.
 
 ## Research Expectations
 
