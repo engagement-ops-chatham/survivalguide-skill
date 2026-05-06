@@ -11,6 +11,8 @@ class SkillScaffoldTest(unittest.TestCase):
         self.assertTrue((SKILL_DIR / "agents" / "openai.yaml").exists())
         self.assertTrue((SKILL_DIR / "scripts").is_dir())
         self.assertTrue((SKILL_DIR / "references").is_dir())
+        self.assertTrue((SKILL_DIR / "scripts" / ".gitkeep").exists())
+        self.assertTrue((SKILL_DIR / "references" / ".gitkeep").exists())
 
 
 if __name__ == "__main__":
