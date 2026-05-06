@@ -7,17 +7,32 @@ from pathlib import Path
 from pypdf import PdfReader
 
 
+REQUEST_FILTER_RULES = [
+    {
+        "target": "include_sections",
+        "value": "private equity",
+        "patterns": [r"\bprivate equity\b"],
+    },
+    {
+        "target": "include_sections",
+        "value": "lenders",
+        "patterns": [r"\blender\b", r"\blenders\b"],
+    },
+    {
+        "target": "exclude_terms",
+        "value": "investment bank",
+        "patterns": [r"\bexclude investment banking\b", r"\bexclude investment bank\b"],
+    },
+]
+
+
 def parse_request_filters(request_text: str) -> dict:
     lower = request_text.lower()
-    include_sections = []
-    if "private equity" in lower:
-        include_sections.append("private equity")
-    if "lender" in lower:
-        include_sections.append("lenders")
-    exclude_terms = []
-    if "exclude investment banking" in lower or "exclude investment bank" in lower:
-        exclude_terms.append("investment bank")
-    return {"include_sections": include_sections, "exclude_terms": exclude_terms}
+    filters = {"include_sections": [], "exclude_terms": []}
+    for rule in REQUEST_FILTER_RULES:
+        if any(re.search(pattern, lower) for pattern in rule["patterns"]):
+            filters[rule["target"]].append(rule["value"])
+    return filters
 
 
 def _normalize_text(value: str) -> str:
@@ -41,6 +56,19 @@ def filter_records(records: list[dict], filters: dict) -> list[dict]:
     return kept
 
 
+def _extract_heading(line: str) -> str | None:
+    candidate = line.strip().rstrip(":")
+    normalized = _normalize_text(candidate)
+    if "," in candidate or not normalized:
+        return None
+    words = normalized.split()
+    if len(words) < 2:
+        return None
+    if candidate == candidate.upper() or candidate.istitle():
+        return normalized
+    return None
+
+
 def _parse_pdf_records(source_path: Path) -> list[dict]:
     reader = PdfReader(str(source_path))
     records = []
@@ -51,11 +79,12 @@ def _parse_pdf_records(source_path: Path) -> list[dict]:
             line = raw_line.strip()
             if not line:
                 continue
-            if re.fullmatch(r"[A-Z][A-Z &/,-]{2,}", line):
-                current_section = line.lower()
+            heading = _extract_heading(line)
+            if heading:
+                current_section = heading
                 continue
             match = re.match(r"(?P<name>[^,]+),\s*(?P<firm>.+)", line)
-            if match:
+            if match and current_section:
                 records.append(
                     {
                         "section": current_section,

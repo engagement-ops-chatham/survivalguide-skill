@@ -46,6 +46,13 @@ class ExtractAttendeesTest(unittest.TestCase):
         self.assertEqual(filters["include_sections"], ["private equity"])
         self.assertIn("investment bank", filters["exclude_terms"])
 
+    def test_parse_request_filters_collects_multiple_vocab_matches(self):
+        filters = parse_request_filters(
+            "Focus on private equity and lenders, and exclude investment bank contacts."
+        )
+        self.assertEqual(filters["include_sections"], ["private equity", "lenders"])
+        self.assertEqual(filters["exclude_terms"], ["investment bank"])
+
     def test_filter_records_matches_broader_section_headings(self):
         rows = [
             {
@@ -98,6 +105,57 @@ class ExtractAttendeesTest(unittest.TestCase):
             ],
         )
 
+    def test_parse_pdf_records_ignores_entries_before_a_heading(self):
+        pdf_text = "\n".join(
+            [
+                "Daniel Troy, Acacia",
+                "PRIVATE EQUITY FIRMS",
+                "Sarah Hall, Beacon",
+            ]
+        )
+        with make_workspace_tempdir() as tmp:
+            pdf_path = Path(tmp) / "attendees.pdf"
+            pdf_path.write_bytes(b"%PDF-FAKE")
+            with patch("extract_attendees.PdfReader") as mock_reader:
+                mock_reader.return_value.pages = [FakePage(pdf_text)]
+                records = _parse_pdf_records(pdf_path)
+
+        self.assertEqual(
+            records,
+            [
+                {
+                    "section": "private equity firms",
+                    "name": "Sarah Hall",
+                    "firm": "Beacon",
+                }
+            ],
+        )
+
+    def test_parse_pdf_records_recognizes_variant_heading_formatting(self):
+        pdf_text = "\n".join(
+            [
+                "Private Equity Firms:",
+                "Daniel Troy, Acacia",
+            ]
+        )
+        with make_workspace_tempdir() as tmp:
+            pdf_path = Path(tmp) / "attendees.pdf"
+            pdf_path.write_bytes(b"%PDF-FAKE")
+            with patch("extract_attendees.PdfReader") as mock_reader:
+                mock_reader.return_value.pages = [FakePage(pdf_text)]
+                records = _parse_pdf_records(pdf_path)
+
+        self.assertEqual(
+            records,
+            [
+                {
+                    "section": "private equity firms",
+                    "name": "Daniel Troy",
+                    "firm": "Acacia",
+                }
+            ],
+        )
+
     def test_load_records_reads_json_sources(self):
         rows = [{"section": "private equity firms", "firm": "Acacia", "name": "Daniel"}]
         with make_workspace_tempdir() as tmp:
@@ -105,6 +163,35 @@ class ExtractAttendeesTest(unittest.TestCase):
             source_path.write_text(json.dumps(rows), encoding="utf-8")
             loaded = _load_records(source_path)
         self.assertEqual(loaded, rows)
+
+    def test_load_records_reads_csv_sources(self):
+        csv_text = "\n".join(
+            [
+                "section,firm,name",
+                "private equity firms,Acacia,Daniel Troy",
+            ]
+        )
+        with make_workspace_tempdir() as tmp:
+            source_path = Path(tmp) / "attendees.csv"
+            source_path.write_text(csv_text, encoding="utf-8")
+            loaded = _load_records(source_path)
+        self.assertEqual(
+            loaded,
+            [
+                {
+                    "section": "private equity firms",
+                    "firm": "Acacia",
+                    "name": "Daniel Troy",
+                }
+            ],
+        )
+
+    def test_load_records_rejects_unsupported_sources(self):
+        with make_workspace_tempdir() as tmp:
+            source_path = Path(tmp) / "attendees.txt"
+            source_path.write_text("Daniel Troy, Acacia", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Unsupported source file"):
+                _load_records(source_path)
 
     def test_main_writes_filtered_json_from_cli_inputs(self):
         source_rows = [
