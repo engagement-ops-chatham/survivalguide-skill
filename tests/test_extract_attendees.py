@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRATCH_ROOT = REPO_ROOT.parent / "test-scratch"
 sys.path.insert(0, str(REPO_ROOT / "conference-survival-guide" / "scripts"))
 
 from extract_attendees import (  # noqa: E402
@@ -30,12 +31,13 @@ class FakePage:
 
 @contextmanager
 def make_workspace_tempdir():
-    tmp_path = REPO_ROOT / f"tmp_test_{uuid.uuid4().hex}"
+    SCRATCH_ROOT.mkdir(exist_ok=True)
+    tmp_path = SCRATCH_ROOT / f"tmp_test_{uuid.uuid4().hex}"
     tmp_path.mkdir()
     try:
         yield str(tmp_path)
     finally:
-        shutil.rmtree(tmp_path, ignore_errors=True)
+        shutil.rmtree(tmp_path)
 
 
 class ExtractAttendeesTest(unittest.TestCase):
@@ -52,6 +54,18 @@ class ExtractAttendeesTest(unittest.TestCase):
         )
         self.assertEqual(filters["include_sections"], ["private equity", "lenders"])
         self.assertEqual(filters["exclude_terms"], ["investment bank"])
+
+    def test_parse_request_filters_accepts_common_exclusion_variants(self):
+        examples = [
+            "Please focus on private equity, not investment banks.",
+            "No investment bankers for this guide.",
+            "Avoid bankers and stick to private equity.",
+        ]
+
+        for request_text in examples:
+            with self.subTest(request_text=request_text):
+                filters = parse_request_filters(request_text)
+                self.assertIn("investment bank", filters["exclude_terms"])
 
     def test_parse_request_filters_collects_multiple_vocab_matches(self):
         filters = parse_request_filters(
