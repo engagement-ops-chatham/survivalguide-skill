@@ -28,7 +28,7 @@ REQUEST_FILTER_RULES = [
             r"\bwithout investment bank(?:ing|ers?)\b",
             r"\bnot investment bank(?:s|ers?|ing)?\b",
             r"\bno investment bank(?:s|ers?|ing)?\b",
-            r"\bavoid(?:ing)?(?:\s+investment)?\s+bank(?:s|ers?|ing)?\b",
+            r"\bavoid(?:ing)?\s+investment\s+bank(?:s|ers?|ing)?\b",
         ],
     },
 ]

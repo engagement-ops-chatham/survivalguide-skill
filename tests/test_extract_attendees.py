@@ -59,7 +59,7 @@ class ExtractAttendeesTest(unittest.TestCase):
         examples = [
             "Please focus on private equity, not investment banks.",
             "No investment bankers for this guide.",
-            "Avoid bankers and stick to private equity.",
+            "Avoid investment bankers and stick to private equity.",
         ]
 
         for request_text in examples:
@@ -381,6 +381,52 @@ class ExtractAttendeesTest(unittest.TestCase):
 
         self.assertEqual(exit_code, 0)
         self.assertEqual(written, [source_rows[0]])
+
+    def test_main_writes_filtered_json_from_pdf_cli_input(self):
+        pdf_text = "\n".join(
+            [
+                "PRIVATE EQUITY FIRMS",
+                "Daniel Troy, Acacia",
+                "INVESTMENT BANKS",
+                "Erik Konicki, 414 Capital",
+            ]
+        )
+        request_text = "Exclude investment banking contacts and focus on private equity."
+        with make_workspace_tempdir() as tmp:
+            tmp_path = Path(tmp)
+            request_path = tmp_path / "request.txt"
+            source_path = tmp_path / "attendees.pdf"
+            output_path = tmp_path / "filtered.json"
+            request_path.write_text(request_text, encoding="utf-8")
+            source_path.write_bytes(b"%PDF-FAKE")
+
+            argv = [
+                "extract_attendees.py",
+                "--request-file",
+                str(request_path),
+                "--source",
+                str(source_path),
+                "--out",
+                str(output_path),
+            ]
+            with patch("extract_attendees.PdfReader") as mock_reader:
+                mock_reader.return_value.pages = [FakePage(pdf_text)]
+                with patch.object(sys, "argv", argv):
+                    exit_code = main()
+
+            written = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(
+            written,
+            [
+                {
+                    "section": "private equity firms",
+                    "name": "Daniel Troy",
+                    "firm": "Acacia",
+                }
+            ],
+        )
 
 
 if __name__ == "__main__":
