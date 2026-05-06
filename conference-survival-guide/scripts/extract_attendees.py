@@ -20,14 +20,20 @@ def parse_request_filters(request_text: str) -> dict:
     return {"include_sections": include_sections, "exclude_terms": exclude_terms}
 
 
+def _normalize_text(value: str) -> str:
+    return " ".join(re.findall(r"[a-z0-9]+", value.lower()))
+
+
 def filter_records(records: list[dict], filters: dict) -> list[dict]:
-    include_sections = [item.lower() for item in filters.get("include_sections", [])]
-    exclude_terms = [item.lower() for item in filters.get("exclude_terms", [])]
+    include_sections = [
+        _normalize_text(item) for item in filters.get("include_sections", []) if item
+    ]
+    exclude_terms = [_normalize_text(item) for item in filters.get("exclude_terms", [])]
     kept = []
     for row in records:
-        section = row.get("section", "").lower()
-        blob = " ".join(str(value).lower() for value in row.values())
-        if include_sections and section not in include_sections:
+        section = _normalize_text(row.get("section", ""))
+        blob = " ".join(_normalize_text(str(value)) for value in row.values())
+        if include_sections and not any(term in section for term in include_sections):
             continue
         if any(term in blob for term in exclude_terms):
             continue
