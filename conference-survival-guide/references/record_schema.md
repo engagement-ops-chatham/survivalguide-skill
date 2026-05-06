@@ -1,6 +1,6 @@
 # Record Schema
 
-Each normalized research record should use the following fields:
+## Fields
 
 - conference_name: string
 - attendee_name: string
@@ -17,7 +17,7 @@ Each normalized research record should use the following fields:
 - linkedin_url: string
 - review_flags: list[string]
 
-Normalization notes:
+## Normalization Notes
 
 - `primary_contacts` should preserve the exact listed contact names from the attendee artifact in display order.
 - Each `sources` item should include `label`, `url`, and `tier`.
