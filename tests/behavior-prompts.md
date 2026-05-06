@@ -5,6 +5,7 @@
 - `The CRM snapshot is complete, but recent public information is thin or contradictory.`
 - `The account notes mention pain points from 2022 and the last CRM activity is stale.`
 - `The public research suggests expansion, but the CRM snapshot does not mention it.`
+- `The user asks for a survivalguide brief and the workspace contains old DealMAX outputs and downloaded documents.`
 
 ## Expected Checks
 
@@ -36,6 +37,12 @@ FAIL IF: The skill invents CRM history or omits relevant seller context from the
 ASSERT: Outreach guidance stays grounded
 EXPECT: The skill ties the recommended approach to both account history and current external signals
 FAIL IF: The skill produces generic outreach advice disconnected from the account
+```
+
+```text
+ASSERT: Format is taken from the skill contract, not scavenged from local files
+EXPECT: The skill produces the defined sections directly and ignores unrelated workspace artifacts unless the user explicitly asks to match them
+FAIL IF: The skill searches the workspace, Downloads, or prior documents for examples before starting the brief
 ```
 
 ## Pass / Fail Notes

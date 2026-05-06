@@ -37,6 +37,8 @@ Never let public-web research overwrite CRM relationship history.
 
 ## Output Contract
 
+This contract is sufficient on its own. Do not search the workspace or local folders for prior examples unless the user explicitly provides one and asks for format matching.
+
 Start with a 2-3 sentence quick take covering:
 
 - what the company does
@@ -70,3 +72,4 @@ Keep `Confirmed CRM facts` separate from `Externally researched signals` and fro
 - Prefer company website, press releases, leadership pages, and reputable business coverage.
 - Include links in the final answer when external research is used.
 - If a claim is tentative or inferred, label it as such.
+- Do not inspect workspace or Downloads artifacts just to infer the structure of the output.

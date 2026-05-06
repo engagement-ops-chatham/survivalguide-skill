@@ -37,6 +37,13 @@ If the user has pasted a snapshot, treat that snapshot as the CRM source of trut
 
 See `references/input-bundle.md` for the snapshot contract and output sections.
 
+## Format Rules
+
+- Treat the output structure in this skill and `references/input-bundle.md` as complete. Do not search the workspace, Downloads, or local folders for prior examples just to infer formatting.
+- Do not look for DealMAX-style examples, prior briefs, Word documents, CSVs, or other local artifacts unless the user explicitly provides one and asks you to match or transform it.
+- If the user asks for this brief, produce the brief directly from the skill contract. Do not block on finding a template.
+- Only inspect local files when they are part of the user-provided input for the current run.
+
 ## Workflow
 
 1. Confirm the account context.
@@ -66,6 +73,7 @@ See `references/input-bundle.md` for the snapshot contract and output sections.
 - Separate confirmed facts from inference every time.
 - If a claim is uncertain, label it as a hypothesis or weak signal.
 - If external research is thin, say so and avoid false precision.
+- Do not search local workspaces for formatting examples unless the user explicitly requests a transformation of a local artifact.
 
 ## Output Requirements
 
@@ -115,3 +123,4 @@ Keep the final brief concise and scannable. Prefer short paragraphs and compact 
 - The skill keeps CRM facts, external facts, and hypotheses clearly separated.
 - The skill produces a seller-ready outreach angle instead of a generic company summary.
 - The skill produces fuller client and contact summaries when enough context is available.
+- The skill does not search the workspace or Downloads for formatting examples when the skill contract already defines the output.

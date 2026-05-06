@@ -19,6 +19,7 @@ Create a reusable skill that turns a matched HubSpot company snapshot plus curre
 - Current public-web enrichment for recency
 - Outreach-angle guidance tied to account history and current signals
 - Fuller 3-4 sentence client and contact summaries when context supports them
+- Self-contained output contract that does not require searching local examples or prior files
 
 ## Out of Scope
 
