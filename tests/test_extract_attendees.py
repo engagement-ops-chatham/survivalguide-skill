@@ -46,6 +46,13 @@ class ExtractAttendeesTest(unittest.TestCase):
         self.assertEqual(filters["include_sections"], ["private equity"])
         self.assertIn("investment bank", filters["exclude_terms"])
 
+    def test_parse_request_filters_accepts_common_wording_variants(self):
+        filters = parse_request_filters(
+            "Please focus on private equity firms and lending groups, while skipping investment bankers."
+        )
+        self.assertEqual(filters["include_sections"], ["private equity", "lenders"])
+        self.assertEqual(filters["exclude_terms"], ["investment bank"])
+
     def test_parse_request_filters_collects_multiple_vocab_matches(self):
         filters = parse_request_filters(
             "Focus on private equity and lenders, and exclude investment bank contacts."
@@ -152,6 +159,32 @@ class ExtractAttendeesTest(unittest.TestCase):
                     "section": "private equity firms",
                     "name": "Daniel Troy",
                     "firm": "Acacia",
+                }
+            ],
+        )
+
+    def test_parse_pdf_records_does_not_treat_two_word_name_as_heading(self):
+        pdf_text = "\n".join(
+            [
+                "PRIVATE EQUITY FIRMS",
+                "Daniel Troy",
+                "Sarah Hall, Beacon",
+            ]
+        )
+        with make_workspace_tempdir() as tmp:
+            pdf_path = Path(tmp) / "attendees.pdf"
+            pdf_path.write_bytes(b"%PDF-FAKE")
+            with patch("extract_attendees.PdfReader") as mock_reader:
+                mock_reader.return_value.pages = [FakePage(pdf_text)]
+                records = _parse_pdf_records(pdf_path)
+
+        self.assertEqual(
+            records,
+            [
+                {
+                    "section": "private equity firms",
+                    "name": "Sarah Hall",
+                    "firm": "Beacon",
                 }
             ],
         )

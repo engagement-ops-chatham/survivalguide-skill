@@ -11,19 +11,42 @@ REQUEST_FILTER_RULES = [
     {
         "target": "include_sections",
         "value": "private equity",
-        "patterns": [r"\bprivate equity\b"],
+        "patterns": [r"\bprivate equity(?:\s+firms?)?\b"],
     },
     {
         "target": "include_sections",
         "value": "lenders",
-        "patterns": [r"\blender\b", r"\blenders\b"],
+        "patterns": [r"\blender\b", r"\blenders\b", r"\blending groups?\b"],
     },
     {
         "target": "exclude_terms",
         "value": "investment bank",
-        "patterns": [r"\bexclude investment banking\b", r"\bexclude investment bank\b"],
+        "patterns": [
+            r"\bexclude investment banking\b",
+            r"\bexclude investment bank(?:ers?)?\b",
+            r"\bskip(?:ping)? investment bank(?:ing|ers?)\b",
+            r"\bwithout investment bank(?:ing|ers?)\b",
+        ],
     },
 ]
+
+SECTION_HEADING_TERMS = {
+    "bank",
+    "banks",
+    "banking",
+    "capital",
+    "credit",
+    "equity",
+    "finance",
+    "firms",
+    "funds",
+    "investment",
+    "investments",
+    "lender",
+    "lenders",
+    "lending",
+    "private",
+}
 
 
 def parse_request_filters(request_text: str) -> dict:
@@ -63,6 +86,8 @@ def _extract_heading(line: str) -> str | None:
         return None
     words = normalized.split()
     if len(words) < 2:
+        return None
+    if not any(word in SECTION_HEADING_TERMS for word in words):
         return None
     if candidate == candidate.upper() or candidate.istitle():
         return normalized
