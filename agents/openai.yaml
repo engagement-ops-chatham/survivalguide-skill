@@ -1,0 +1,4 @@
+interface:
+  display_name: "Account Research (Salesforce)"
+  short_description: "Salesforce account research briefs"
+  default_prompt: "Use $account-research-salesforce to turn a matched Salesforce account snapshot into a seller-ready account-research brief with current public research."
