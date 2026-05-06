@@ -1,9 +1,9 @@
 ---
-name: account-research-salesforce
+name: survivalguide
 description: Use when building an account-research brief from a Salesforce account snapshot or live Salesforce account context, especially when the user wants company profile, recent news, key people, growth signals, and an outreach angle grounded in CRM relationship history plus current public research.
 ---
 
-# Account Research Salesforce
+# Survival Guide
 
 ## Purpose
 
@@ -98,7 +98,7 @@ Keep the final brief concise and scannable. Prefer short paragraphs and compact 
 
 ## Validation Prompts
 
-- `Use $account-research-salesforce to brief me on this Salesforce account with current public research.`
+- `Use $survivalguide to brief me on this Salesforce account with current public research.`
 - `I pasted a Salesforce account snapshot. Give me a quick take, recent news, key people, and the best outreach angle.`
 - `Research this account at the company level only; do not do person-level research unless I give you a target.`
 - `Separate CRM facts from external research and call out any hypotheses.`

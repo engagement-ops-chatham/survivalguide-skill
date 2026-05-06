@@ -1,6 +1,6 @@
 # Trigger Prompts
 
-- `/account-research-salesforce`
+- `/survivalguide`
 - `Build an account research brief for this Salesforce account using current public research.`
 - `I pasted a Salesforce account snapshot. Give me a quick take, recent news, key people, and an outreach angle.`
 

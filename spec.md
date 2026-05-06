@@ -1,4 +1,4 @@
-# Account Research Salesforce Spec
+# Survival Guide Spec
 
 ## Goal
 
