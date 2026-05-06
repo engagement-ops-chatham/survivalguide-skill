@@ -30,23 +30,13 @@ REQUEST_FILTER_RULES = [
     },
 ]
 
-SECTION_HEADING_TERMS = {
-    "bank",
-    "banks",
-    "banking",
-    "capital",
-    "credit",
-    "equity",
-    "finance",
-    "firms",
-    "funds",
-    "investment",
-    "investments",
-    "lender",
-    "lenders",
-    "lending",
-    "private",
-}
+SECTION_HEADING_PATTERNS = [
+    re.compile(r"^private equity(?: firms?)?$"),
+    re.compile(r"^investment banks?$"),
+    re.compile(r"^investment banking$"),
+    re.compile(r"^lenders?$"),
+    re.compile(r"^lending groups?$"),
+]
 
 
 def parse_request_filters(request_text: str) -> dict:
@@ -84,13 +74,9 @@ def _extract_heading(line: str) -> str | None:
     normalized = _normalize_text(candidate)
     if "," in candidate or not normalized:
         return None
-    words = normalized.split()
-    if len(words) < 2:
-        return None
-    if not any(word in SECTION_HEADING_TERMS for word in words):
-        return None
-    if candidate == candidate.upper() or candidate.istitle():
-        return normalized
+    for pattern in SECTION_HEADING_PATTERNS:
+        if pattern.fullmatch(normalized):
+            return normalized
     return None
 
 

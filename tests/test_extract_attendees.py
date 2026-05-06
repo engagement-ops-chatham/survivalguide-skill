@@ -163,6 +163,31 @@ class ExtractAttendeesTest(unittest.TestCase):
             ],
         )
 
+    def test_parse_pdf_records_recognizes_sentence_case_heading(self):
+        pdf_text = "\n".join(
+            [
+                "Private equity firms",
+                "Daniel Troy, Acacia",
+            ]
+        )
+        with make_workspace_tempdir() as tmp:
+            pdf_path = Path(tmp) / "attendees.pdf"
+            pdf_path.write_bytes(b"%PDF-FAKE")
+            with patch("extract_attendees.PdfReader") as mock_reader:
+                mock_reader.return_value.pages = [FakePage(pdf_text)]
+                records = _parse_pdf_records(pdf_path)
+
+        self.assertEqual(
+            records,
+            [
+                {
+                    "section": "private equity firms",
+                    "name": "Daniel Troy",
+                    "firm": "Acacia",
+                }
+            ],
+        )
+
     def test_parse_pdf_records_does_not_treat_two_word_name_as_heading(self):
         pdf_text = "\n".join(
             [
@@ -185,6 +210,32 @@ class ExtractAttendeesTest(unittest.TestCase):
                     "section": "private equity firms",
                     "name": "Sarah Hall",
                     "firm": "Beacon",
+                }
+            ],
+        )
+
+    def test_parse_pdf_records_does_not_treat_firm_name_as_heading(self):
+        pdf_text = "\n".join(
+            [
+                "PRIVATE EQUITY FIRMS",
+                "Beacon Capital",
+                "Sarah Hall, Beacon Capital",
+            ]
+        )
+        with make_workspace_tempdir() as tmp:
+            pdf_path = Path(tmp) / "attendees.pdf"
+            pdf_path.write_bytes(b"%PDF-FAKE")
+            with patch("extract_attendees.PdfReader") as mock_reader:
+                mock_reader.return_value.pages = [FakePage(pdf_text)]
+                records = _parse_pdf_records(pdf_path)
+
+        self.assertEqual(
+            records,
+            [
+                {
+                    "section": "private equity firms",
+                    "name": "Sarah Hall",
+                    "firm": "Beacon Capital",
                 }
             ],
         )
