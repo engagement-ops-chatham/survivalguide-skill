@@ -1,4 +1,4 @@
 interface:
   display_name: "Conference Survival Guide"
   short_description: "Build researched conference guides"
-  default_prompt: "Use $conference-survival-guide to create a conference survival guide from an attendee list."
+  default_prompt: "Use $conference-survival-guide to turn an attendee source and request into a polished conference survival guide."

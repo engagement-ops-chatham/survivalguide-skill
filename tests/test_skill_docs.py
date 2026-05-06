@@ -24,6 +24,33 @@ class SkillScaffoldTest(unittest.TestCase):
         self.assertTrue((SKILL_DIR / "scripts" / ".gitkeep").exists())
         self.assertTrue((SKILL_DIR / "references" / ".gitkeep").exists())
 
+    def test_skill_markdown_mentions_required_rules(self):
+        text = (SKILL_DIR / "SKILL.md").read_text(encoding="utf-8")
+
+        self.assertIn("attendee lists", text)
+        self.assertIn("event booklets", text)
+        self.assertIn("request emails", text)
+        self.assertIn("prior guides", text)
+        self.assertIn("exact listed contacts", text)
+        self.assertIn("HubSpot company validation", text)
+        self.assertIn("LinkedIn-first research", text)
+        self.assertIn("polished DOCX deliverable", text)
+        self.assertIn("source of truth for contacts", text)
+        self.assertIn("must not be replaced from HubSpot", text)
+        self.assertIn("Private Equity", text)
+        self.assertIn("do not hardcode", text)
+        self.assertIn("Contact Summary", text)
+        self.assertIn("Company Summary", text)
+        self.assertIn("2-3 sentences", text)
+        self.assertIn("Review Line", text)
+        self.assertIn("scripts/extract_attendees.py", text)
+        self.assertIn("scripts/render_survival_guide.py", text)
+
+    def test_reference_docs_exist(self):
+        self.assertTrue((SKILL_DIR / "references" / "source_hierarchy.md").exists())
+        self.assertTrue((SKILL_DIR / "references" / "hubspot_matching.md").exists())
+        self.assertTrue((SKILL_DIR / "references" / "record_schema.md").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
