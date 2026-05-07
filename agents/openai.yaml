@@ -1,0 +1,4 @@
+interface:
+  display_name: "Survival Guide"
+  short_description: "HubSpot account research briefs"
+  default_prompt: "Use $survivalguide to turn a matched HubSpot company snapshot into a seller-ready account-research brief with current public research."
