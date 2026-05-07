@@ -271,6 +271,90 @@ class ExtractAttendeesTest(unittest.TestCase):
             ],
         )
 
+    def test_parse_pdf_records_extracts_multiline_attendee_blocks(self):
+        pdf_text = "\n".join(
+            [
+                "PRIVATE EQUITY",
+                "",
+                "Daniel Troy",
+                "Acacia",
+                "777 Third Avenue, Suite 2602",
+                "New York, New York 10017",
+                "Phone: (914) 571-8303",
+                "dtroy@acaciares.com",
+                "",
+                "John Sedlacek",
+                "AEA Investors",
+                "520 Madison Avenue, 40th Floor",
+                "New York, New York 10022",
+                "Phone: (908) 601-4449",
+                "jsedlacek@aeainvestors.com",
+            ]
+        )
+        with make_workspace_tempdir() as tmp:
+            pdf_path = Path(tmp) / "attendees.pdf"
+            pdf_path.write_bytes(b"%PDF-FAKE")
+            with patch("extract_attendees.PdfReader") as mock_reader:
+                mock_reader.return_value.pages = [FakePage(pdf_text)]
+                records = _parse_pdf_records(pdf_path)
+
+        self.assertEqual(
+            records,
+            [
+                {
+                    "section": "private equity",
+                    "name": "Daniel Troy",
+                    "firm": "Acacia",
+                },
+                {
+                    "section": "private equity",
+                    "name": "John Sedlacek",
+                    "firm": "AEA Investors",
+                },
+            ],
+        )
+
+    def test_parse_pdf_records_resets_section_when_sponsors_heading_appears(self):
+        pdf_text = "\n".join(
+            [
+                "PRIVATE EQUITY",
+                "",
+                "Daniel Troy",
+                "Acacia",
+                "Phone: (914) 571-8303",
+                "dtroy@acaciares.com",
+                "",
+                "SPONSORS",
+                "",
+                "Christiana Frank",
+                "Northstar",
+                "Phone: (713) 819-8871",
+                "christiana@enorthstar.com",
+            ]
+        )
+        with make_workspace_tempdir() as tmp:
+            pdf_path = Path(tmp) / "attendees.pdf"
+            pdf_path.write_bytes(b"%PDF-FAKE")
+            with patch("extract_attendees.PdfReader") as mock_reader:
+                mock_reader.return_value.pages = [FakePage(pdf_text)]
+                records = _parse_pdf_records(pdf_path)
+
+        self.assertEqual(
+            records,
+            [
+                {
+                    "section": "private equity",
+                    "name": "Daniel Troy",
+                    "firm": "Acacia",
+                },
+                {
+                    "section": "sponsors",
+                    "name": "Christiana Frank",
+                    "firm": "Northstar",
+                },
+            ],
+        )
+
     def test_load_records_reads_json_sources(self):
         rows = [{"section": "private equity firms", "firm": "Acacia", "name": "Daniel"}]
         with make_workspace_tempdir() as tmp:

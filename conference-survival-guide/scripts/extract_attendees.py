@@ -47,7 +47,60 @@ SECTION_HEADING_PATTERNS = [
     re.compile(r"^investment banking$"),
     re.compile(r"^lenders?$"),
     re.compile(r"^lending groups?$"),
+    re.compile(r"^sponsors?$"),
 ]
+
+
+def _looks_like_person_name(value: str) -> bool:
+    if not value or any(token in value for token in ["@", ":", ","]):
+        return False
+    if re.search(r"\d", value):
+        return False
+    parts = value.split()
+    if len(parts) < 2 or len(parts) > 4:
+        return False
+    return all(re.fullmatch(r"[A-Z][A-Za-z'.-]*", part) for part in parts)
+
+
+def _looks_like_address_fragment(value: str) -> bool:
+    normalized = _normalize_text(value)
+    if re.search(r"\b\d{5}\b", value):
+        return True
+    return any(
+        token in normalized
+        for token in [
+            "suite",
+            "ste",
+            "floor",
+            "street",
+            "st",
+            "avenue",
+            "ave",
+            "road",
+            "rd",
+            "boulevard",
+            "blvd",
+            "circle",
+            "court",
+            "lane",
+            "drive",
+            "parkway",
+        ]
+    )
+
+
+def _flush_multiline_record(
+    records: list[dict], current_section: str, pending_name: str, pending_firm: str
+) -> tuple[str | None, str | None]:
+    if current_section and pending_name and pending_firm:
+        records.append(
+            {
+                "section": current_section,
+                "name": pending_name.strip(),
+                "firm": pending_firm.strip(),
+            }
+        )
+    return None, None
 
 
 def parse_request_filters(request_text: str) -> dict:
@@ -102,18 +155,41 @@ def _parse_pdf_records(source_path: Path) -> list[dict]:
     reader = PdfReader(str(source_path))
     records = []
     current_section = ""
+    pending_name = None
+    pending_firm = None
     for page in reader.pages:
         text = page.extract_text() or ""
         for raw_line in text.splitlines():
             line = raw_line.strip()
             if not line:
+                pending_name, pending_firm = _flush_multiline_record(
+                    records, current_section, pending_name, pending_firm
+                )
+                continue
+            if line.startswith("Phone:") or "@" in line:
+                pending_name, pending_firm = _flush_multiline_record(
+                    records, current_section, pending_name, pending_firm
+                )
+                continue
+            if not line:
                 continue
             heading = _extract_heading(line)
             if heading:
+                pending_name, pending_firm = _flush_multiline_record(
+                    records, current_section, pending_name, pending_firm
+                )
                 current_section = heading
                 continue
             match = re.match(r"(?P<name>[^,]+),\s*(?P<firm>.+)", line)
-            if match and current_section:
+            if (
+                match
+                and current_section
+                and _looks_like_person_name(match.group("name").strip())
+                and not _looks_like_address_fragment(match.group("firm").strip())
+            ):
+                pending_name, pending_firm = _flush_multiline_record(
+                    records, current_section, pending_name, pending_firm
+                )
                 records.append(
                     {
                         "section": current_section,
@@ -121,6 +197,18 @@ def _parse_pdf_records(source_path: Path) -> list[dict]:
                         "firm": match.group("firm").strip(),
                     }
                 )
+                continue
+            if not current_section:
+                continue
+            if pending_name is None and _looks_like_person_name(line):
+                pending_name = line
+                continue
+            if pending_name and pending_firm is None:
+                pending_firm = line
+                continue
+    pending_name, pending_firm = _flush_multiline_record(
+        records, current_section, pending_name, pending_firm
+    )
     return records
 
 
