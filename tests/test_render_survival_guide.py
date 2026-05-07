@@ -78,7 +78,21 @@ class RenderGuideTest(unittest.TestCase):
             render_guide(records, docx_path)
             doc = Document(docx_path)
             text = "\n".join(paragraph.text for paragraph in doc.paragraphs)
+        self.assertIn("Industrials Heavy Hitters 2026", text)
         self.assertIn("Daniel Troy", text)
+        self.assertIn("Primary Contact: Daniel Troy", text)
+        self.assertIn(
+            "Contact Summary: Daniel Troy is a principal at Acacia. He focuses on technology and industrial investments.",
+            text,
+        )
+        self.assertIn(
+            "Company Summary: Acacia is an operationally engaged investor. The firm backs technology and services businesses.",
+            text,
+        )
+        self.assertIn(
+            "Relationship / Opportunity Context: Prospect. No confirmed client match. One open opportunity exists.",
+            text,
+        )
         self.assertIn("Review:", text)
         self.assertIn("Sources", text)
         self.assertIn("LinkedIn: https://linkedin.example/daniel-troy", text)
@@ -89,10 +103,29 @@ class RenderGuideTest(unittest.TestCase):
             csv_path = tmp_path / "guide.csv"
             write_qa_csv(records, csv_path)
             with csv_path.open("r", encoding="utf-8", newline="") as handle:
-                rows = list(csv.DictReader(handle))
+                reader = csv.DictReader(handle)
+                rows = list(reader)
+                headers = reader.fieldnames
+        self.assertEqual(
+            headers,
+            [
+                "conference_name",
+                "attendee_name",
+                "source_firm_name",
+                "hubspot_match_name",
+                "hubspot_match_confidence",
+                "hubspot_url",
+                "linkedin_url",
+                "review_flags",
+            ],
+        )
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["attendee_name"], "Daniel Troy")
         self.assertEqual(rows[0]["hubspot_match_confidence"], "likely")
+        self.assertEqual(rows[0]["hubspot_url"], "https://example.test")
+        self.assertEqual(
+            rows[0]["linkedin_url"], "https://linkedin.example/daniel-troy"
+        )
         self.assertEqual(rows[0]["review_flags"], "name-match-review")
 
     def test_main_writes_docx_and_csv_from_cli_inputs(self):
